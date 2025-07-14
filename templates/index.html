@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조롱 - 장문 조롱 텍스트 생성기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&family=Nanum+Pen+Script&family=Nunito:wght@400;600;700;800&family=Comfortaa:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Comfortaa', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            background: #c49b7a;
+            color: #333;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 40%, rgba(0, 0, 0, 0.01) 0%, transparent 60%),
+                radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.005) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .app { height: 100vh; position: relative; }
+
+        .step-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            opacity: 0; 
+            transform: translateX(100%); 
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            z-index: 1;
+        }
+        .step-screen.active { opacity: 1; transform: translateX(0); }
+        .step-screen.prev { transform: translateX(-100%); }
+
+        .header { 
+            background: transparent;
+            padding: 1rem 2rem; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            position: relative;
+        }
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: #666;
+            text-align: center;
+            letter-spacing: 0.02em;
+            font-family: 'Nunito', sans-serif;
+        }
+        .step-indicator { 
+            position: absolute; 
+            right: 2rem; 
+            background: transparent;
+            color: #999; 
+            padding: 0.3rem 0.8rem; 
+            border-radius: 15px; 
+            font-weight: 600; 
+            font-size: 0.7rem;
+            border: 1px solid #e5e5e5;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .content { 
+            flex: 1; 
+            padding: 3rem 2rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            overflow-y: auto;
+            position: relative;
+        }
+        .step-title { 
+            font-size: 1.8rem; 
+            font-weight: 500; 
+            color: #333;
+            margin-bottom: 0.8rem; 
+            letter-spacing: 0.01em;
+            line-height: 1.4;
+            font-family: 'Comfortaa', 'Noto Sans KR', sans-serif;
+        }
+        .step-subtitle { 
+            font-size: 0.95rem; 
+            color: #666; 
+            margin-bottom: 2rem; 
+            max-width: 600px; 
+            line-height: 1.6;
+            font-weight: 400;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .choice-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 1.5rem; 
+            max-width: 900px; 
+            width: 100%; 
+            margin-bottom: 2.5rem; 
+        }
+        .choice-item { 
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(139, 69, 19, 0.15);
+            border-radius: 20px; 
+            padding: 2rem 1.5rem; 
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            text-align: center; 
+            min-height: 160px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            position: relative;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.08);
+        }
+        .choice-item:hover { 
+            border-color: rgba(139, 69, 19, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 69, 19, 0.15);
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+        }
+        .choice-item.selected { 
+            background: rgba(255, 248, 220, 0.98);
+            border-color: #8B4513;
+            box-shadow: 0 8px 30px rgba(139, 69, 19, 0.25);
+            transform: translateY(-2px);
+        }
+        .choice-emoji { 
+            font-size: 1.5rem; 
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+        .choice-title { 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            color: #8B4513; 
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.01em; 
+            font-family: 'Comfortaa', 'Noto Sans KR', sans-serif;
+        }
+        .choice-desc { 
+            font-size: 0.9rem; 
+            color: rgba(139, 69, 19, 0.7); 
+            line-height: 1.5;
+            font-weight: 400;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .nav-footer { 
+            padding: 2rem; 
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(51, 51, 51, 0.1);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .nav-btn { 
+            padding: 1rem 2rem; 
+            border-radius: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            border: none; 
+            font-size: 1rem;
+            letter-spacing: -0.01em;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-btn.back { 
+            background: linear-gradient(135deg, rgba(241, 245, 249, 0.8), rgba(226, 232, 240, 0.6));
+            color: #475569; 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .nav-btn.back:hover { 
+            background: linear-gradient(135deg, rgba(226, 232, 240, 0.9), rgba(203, 213, 225, 0.7));
+            color: #334155;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        .nav-btn.next { 
+            background: #333; 
+            color: white; 
+            border: 2px solid #333;
+            border-radius: 25px;
+            font-family: 'Comfortaa', 'Noto Sans KR', sans-serif;
+            font-weight: 600;
+        }
+        .nav-btn.next:hover { 
+            background: #555; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 15px rgba(51, 51, 51, 0.3); 
+        }
+        .nav-btn:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none; 
+        }
+
+        .loading-screen { 
+            justify-content: center; 
+            align-items: center; 
+            background: #c49b7a; 
+            color: #333; 
+            position: relative;
+        }
+        .loading-content { text-align: center; }
+        .loading-spinner { 
+            width: 60px; 
+            height: 60px; 
+            border: 4px solid rgba(255, 255, 255, 0.2); 
+            border-top: 4px solid white; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 1.5rem; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .result-screen { background: #f8fafc; }
+        .result-content { max-width: 700px; width: 100%; }
+        .result-title { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            color: #d9534f;
+            margin-bottom: 1.5rem; 
+        }
+        .letter-display { 
+            background: rgba(255, 248, 220, 0.95); 
+            border-radius: 20px; 
+            padding: 3rem 2.5rem; 
+            font-size: 1.2rem; 
+            line-height: 1.9; 
+            color: #5D4037; 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 2rem; 
+            min-height: 350px; 
+            max-height: 550px;
+            overflow-y: auto;
+            font-family: 'Nanum Pen Script', cursive;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.12);
+            letter-spacing: 0.02em;
+        }
+
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-actions { 
+            display: flex; 
+            gap: 0.8rem; 
+            justify-content: center; 
+            flex-wrap: wrap;
+        }
+        .action-btn { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: none; 
+            font-size: 0.9rem; 
+        }
+        .action-btn.secondary { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn.secondary:hover { 
+            background: #e2e8f0; 
+            color: #475569;
+        }
+        .action-btn.primary { 
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white; 
+            box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+        }
+        .action-btn.primary:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4); 
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #d9534f;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+        .modal-section h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .modal-section p, .modal-section ul {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        .modal-loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d9534f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .safety-warning {
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .safety-warning .icon {
+            font-size: 1.5rem;
+            color: #cc0000;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.5rem; }
+            .content { padding: 1.5rem 1rem; }
+            .choice-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .nav-footer { padding: 1rem; flex-direction: column; gap: 0.8rem; }
+            .nav-btn { width: 100%; max-width: 300px; }
+        }
+
+        /* handwriting animation */
+        @keyframes writeText {
+            0% { 
+                stroke-dashoffset: 100;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% { 
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        .handwriting {
+            font-family: 'Caveat', cursive, 'Nanum Pen Script', cursive;
+            opacity: 0;
+            animation: fadeInWrite 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInWrite {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1) translateY(0);
+            }
+            100% { 
+                opacity: 0.4;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .doodle-element {
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInScale 1.5s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .choice-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(160, 82, 45, 0.08), rgba(205, 133, 63, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .choice-item:hover::before {
+            opacity: 1;
+        }
+        .choice-item:hover { 
+            border-color: rgba(139, 69, 19, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 69, 19, 0.15);
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-btn:hover::before {
+            opacity: 1;
+        }
+        .loading-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin-bottom: 1rem; 
+        }
+        .loading-steps { margin-top: 1.5rem; }
+        .loading-step { 
+            padding: 0.4rem 0; 
+            opacity: 0.6; 
+            transition: opacity 0.3s; 
+            font-size: 0.9rem;
+        }
+        .loading-step.active { opacity: 1; }
+        .result-title { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            color: #d9534f; /* 조롱 앱 색상 */
+            margin-bottom: 1.5rem; 
+        }
+        .letter-display { 
+            background: rgba(255, 248, 220, 0.95); 
+            border-radius: 20px; 
+            padding: 3rem 2.5rem; 
+            font-size: 1.2rem; 
+            line-height: 1.9; 
+            color: #5D4037; 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 2rem; 
+            min-height: 350px; 
+            max-height: 550px;
+            overflow-y: auto;
+            font-family: 'Nanum Pen Script', cursive; /* 조롱 앱 폰트 */
+            position: relative;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.12);
+            letter-spacing: 0.02em;
+        }
+
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        /* 모던 편지 스타일링 */
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-actions { 
+            display: flex; 
+            gap: 0.8rem; 
+            justify-content: center; 
+            flex-wrap: wrap;
+        }
+        .action-btn { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: none; 
+            font-size: 0.9rem; 
+        }
+        .action-btn.secondary { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn.secondary:hover { 
+            background: #e2e8f0; 
+            color: #475569;
+        }
+        .action-btn.primary { 
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white; 
+            box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+        }
+        .action-btn.primary:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4); 
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #d9534f;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+        .modal-section h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .modal-section p, .modal-section ul {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        .modal-loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d9534f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .safety-warning {
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .safety-warning .icon {
+            font-size: 1.5rem;
+            color: #cc0000;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.5rem; }
+            .content { padding: 1.5rem 1rem; }
+            .choice-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .nav-footer { padding: 1rem; flex-direction: column; gap: 0.8rem; }
+            .nav-btn { width: 100%; max-width: 300px; }
+        }
+
+        /* handwriting animation */
+        @keyframes writeText {
+            0% { 
+                stroke-dashoffset: 100;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% { 
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        .handwriting {
+            font-family: 'Caveat', cursive, 'Nanum Pen Script', cursive;
+            opacity: 0;
+```text
+            animation: fadeInWrite 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInWrite {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1) translateY(0);
+            }
+            100% { 
+                opacity: 0.4;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .doodle-element {
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInScale 1.5s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .choice-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(160, 82, 45, 0.08), rgba(205, 133, 63, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .choice-item:hover::before {
+            opacity: 1;
+        }
+        .choice-item:hover { 
+            border-color: rgba(139, 69, 19, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 69, 19, 0.15);
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-btn:hover::before {
+            opacity: 1;
+        }
+        .loading-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin-bottom: 1rem; 
+        }
+        .loading-steps { margin-top: 1.5rem; }
+        .loading-step { 
+            padding: 0.4rem 0; 
+            opacity: 0.6; 
+            transition: opacity 0.3s; 
+            font-size: 0.9rem;
+        }
+        .loading-step.active { opacity: 1; }
+        .result-title { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            color: #d9534f; /* 조롱 앱 색상 */
+            margin-bottom: 1.5rem; 
+        }
+        .letter-display { 
+            background: rgba(255, 248, 220, 0.95); 
+            border-radius: 20px; 
+            padding: 3rem 2.5rem; 
+            font-size: 1.2rem; 
+            line-height: 1.9; 
+            color: #5D4037; 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 2rem; 
+            min-height: 350px; 
+            max-height: 550px;
+            overflow-y: auto;
+            font-family: 'Nanum Pen Script', cursive; /* 조롱 앱 폰트 */
+            position: relative;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.12);
+            letter-spacing: 0.02em;
+        }
+
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        /* 모던 편지 스타일링 */
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-actions { 
+            display: flex; 
+            gap: 0.8rem; 
+            justify-content: center; 
+            flex-wrap: wrap;
+        }
+        .action-btn { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: none; 
+            font-size: 0.9rem; 
+        }
+        .action-btn.secondary { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn.secondary:hover { 
+            background: #e2e8f0; 
+            color: #475569;
+        }
+        .action-btn.primary { 
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white; 
+            box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+        }
+        .action-btn.primary:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4); 
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #d9534f;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+        .modal-section h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .modal-section p, .modal-section ul {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        .modal-loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d9534f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .safety-warning {
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .safety-warning .icon {
+            font-size: 1.5rem;
+            color: #cc0000;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.5rem; }
+            .content { padding: 1.5rem 1rem; }
+            .choice-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .nav-footer { padding: 1rem; flex-direction: column; gap: 0.8rem; }
+            .nav-btn { width: 100%; max-width: 300px; }
+        }
+
+        /* handwriting animation */
+        @keyframes writeText {
+            0% { 
+                stroke-dashoffset: 100;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% { 
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        .handwriting {
+            font-family: 'Caveat', cursive, 'Nanum Pen Script', cursive;
+            opacity: 0;
+            animation: fadeInWrite 3s ease-in-out forwards;
+        }
+
+        @keyframes fadeInWrite {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1) translateY(0);
+            }
+            100% { 
+                opacity: 0.4;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .doodle-element {
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInScale 1.5s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .choice-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(160, 82, 45, 0.08), rgba(205, 133, 63, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .choice-item:hover::before {
+            opacity: 1;
+        }
+        .choice-item:hover { 
+            border-color: rgba(139, 69, 19, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 69, 19, 0.15);
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-btn:hover::before {
+            opacity: 1;
+        }
+        .loading-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin-bottom: 1rem; 
+        }
+        .loading-steps { margin-top: 1.5rem; }
+        .loading-step { 
+            padding: 0.4rem 0; 
+            opacity: 0.6; 
+            transition: opacity 0.3s; 
+            font-size: 0.9rem;
+        }
+        .loading-step.active { opacity: 1; }
+        .result-title { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            color: #d9534f; /* 조롱 앱 색상 */
+            margin-bottom: 1.5rem; 
+        }
+        .letter-display { 
+            background: rgba(255, 248, 220, 0.95); 
+            border-radius: 20px; 
+            padding: 3rem 2.5rem; 
+            font-size: 1.2rem; 
+            line-height: 1.9; 
+            color: #5D4037; 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            margin-bottom: 2rem; 
+            min-height: 350px; 
+            max-height: 550px;
+            overflow-y: auto;
+            font-family: 'Nanum Pen Script', cursive; /* 조롱 앱 폰트 */
+            position: relative;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.12);
+            letter-spacing: 0.02em;
+        }
+
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        /* 모던 편지 스타일링 */
+        .modern-letter {
+            position: relative;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: 20px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #1a202c;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-actions { 
+            display: flex; 
+            gap: 0.8rem; 
+            justify-content: center; 
+            flex-wrap: wrap;
+        }
+        .action-btn { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: none; 
+            font-size: 0.9rem; 
+        }
+        .action-btn.secondary { 
+            background: #f1f5f9; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn.secondary:hover { 
+            background: #e2e8f0; 
+            color: #475569;
+        }
+        .action-btn.primary { 
+            background: linear-gradient(135deg, #d9534f, #c9302c);
+            color: white; 
+            box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+        }
+        .action-btn.primary:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4); 
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+        }
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #d9534f;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+        .modal-section h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .modal-section p, .modal-section ul {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        .modal-loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d9534f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .safety-warning {
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .safety-warning .icon {
+            font-size: 1.5rem;
+            color: #cc0000;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.5rem; }
+            .content { padding: 1.5rem 1rem; }
+            .choice-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .nav-footer { padding: 1rem; flex-direction: column; gap: 0.8rem; }
+            .nav-btn { width: 100%; max-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 시작 화면 -->
+        <div class="step-screen active" data-step="0">
+            <div class="content" style="justify-content: center; align-items: center; position: relative; background: none;">
+                <div style="position: relative; text-align: center;">
+                    <div style="font-family: 'Nanum Pen Script', cursive; font-size: 4rem; font-weight: 400; color: #333; margin-bottom: 3rem;">
+                        조롱
+                    </div>
+                </div>
+                <div style="margin-top: 4rem;">
+                    <button id="startButton" style="background: #8B4513; border: 2px solid #8B4513; color: white; padding: 1.2rem 3rem; border-radius: 30px; font-size: 1.1rem; font-weight: 500; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); font-family: 'Comfortaa', 'Noto Sans KR', sans-serif; box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);">
+                        조롱 시작
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1단계: 조롱 대상 및 내용 입력 -->
+        <div class="step-screen" data-step="1">
+            <div class="header">
+                <div class="logo">Jorong Studio</div>
+                <div class="step-indicator">1단계 / 3단계</div>
+            </div>
+            <div class="content">
+                <div class="step-title">누구를 조롱하시나요?</div>
+                <div class="step-subtitle">조롱하고 싶은 대상과 내용을 알려주세요</div>
+
+                <div style="max-width: 600px; width: 100%;">
+                    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <div class="mb-3">
+                            <label for="targetInput" class="form-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; font-size: 1rem;">조롱 대상:</label>
+                            <input type="text" class="form-control" id="targetInput" placeholder="예: 매일 지각하는 팀장님, 끝없이 불평하는 친구" required style="width: 100%; padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="keywordsInput" class="form-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; font-size: 1rem;">조롱하고 싶은 내용/키워드 (쉼표로 구분):</label>
+                            <textarea class="form-control" id="keywordsInput" rows="3" placeholder="예: 지각, 회피, 변명, 자기 자랑, 시끄러운 재채기" required style="width: 100%; padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; height: 100px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-footer">
+                <button class="nav-btn back" onclick="prevStep()">← 이전</button>
+                <button class="nav-btn next" id="inputNext" onclick="nextStep()" disabled>다음 →</button>
+            </div>
+        </div>
+
+        <!-- 2단계: 톤 및 길이 선택 -->
+        <div class="step-screen" data-step="2">
+            <div class="header">
+                <div class="logo">Jorong Studio</div>
+                <div class="step-indicator">2단계 / 3단계</div>
+            </div>
+            <div class="content">
+                <div class="step-title">어떤 톤으로 조롱할까요?</div>
+                <div class="step-subtitle">조롱의 분위기와 길이를 정해주세요</div>
+
+                <div style="max-width: 600px; width: 100%; margin-bottom: 2rem;">
+                    <!-- 흑화 단계 설정 -->
+                    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="font-weight: 600; color: #1e293b; font-size: 1.1rem;">흑화 단계 설정</span>
+                            <span id="darknessValue" style="color: #d9534f; font-weight: 600; font-size: 0.9rem;">가벼운 놀림 (2단계)</span>
+                        </div>
+                        <input type="range" class="form-range" id="darknessLevel" min="1" max="5" step="1" value="2">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-top: 0.6rem;">
+                            <span>순수 유머 (1단계)</span>
+                            <span>파괴적 공격 (5단계)</span>
+                        </div>
+
+                        <!-- 선택된 단계 정보 표시 -->
+                        <div id="selectedDarknessInfo" style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #d9534f; margin-top: 1.5rem;">
+                            <div id="selectedDarknessTitle" style="font-weight: 600; color: #d9534f; margin-bottom: 0.5rem;">2단계: 가벼운 놀림</div>
+                            <div id="selectedDarknessDesc" style="font-size: 0.9rem; color: #4a5568; line-height: 1.5;">친구 사이의 장난스러운 놀림</div>
+                            <div id="selectedDarknessSafety" style="margin-top: 0.8rem; font-size: 0.85rem; font-weight: 500;">
+                                <span style="color: #f59e0b;">⚠️ 안전도: 주의 필요 (4/5)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="font-weight: 600; color: #1e293b; font-size: 1rem;">조롱 텍스트 길이</span>
+                            <span id="lengthValue" style="color: #d9534f; font-weight: 600; font-size: 0.9rem;">보통 (500자)</span>
+                        </div>
+                        <input type="range" class="form-range" id="letterLength" min="100" max="1000" step="100" value="500">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-top: 0.6rem;">
+                            <span>짧게 (100자)</span>
+                            <span>매우 길게 (1000자)</span>
+                        </div>
+                    </div>
+
+                    <!-- 추가 기능 선택 UI -->
+                    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 1rem;">
+                        <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem; text-align: left;">추가 기능</div>
+
+                        <!-- 말투 선택 확장 -->
+                        <div id="advancedToneToggle" style="cursor: pointer; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1rem;```html
+ background: #f8fafc; transition: all 0.3s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 500; color: #374151;">고급 말투 선택</span>
+                                <span id="advancedToneArrow" style="transition: transform 0.3s ease;">▼</span>
+                            </div>
+                        </div>
+
+                        <div id="advancedToneOptions" style="display: none; margin-bottom: 1rem;">
+                            <div class="choice-grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.8rem;">
+                                <div class="choice-item advanced-tone-item" data-value="MZ 반말 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">M</div>
+                                    <div class="choice-title">MZ 반말</div>
+                                    <div class="choice-desc">인터넷 슬랭과 줄임말</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="애교 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">♡</div>
+                                    <div class="choice-title">애교 톤</div>
+                                    <div class="choice-desc">귀엽고 사랑스러운 느낌</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="헬창 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">💪</div>
+                                    <div class="choice-title">헬창 톤</div>
+                                    <div class="choice-desc">운동 문화 에너지</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="감성 에세이 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">📝</div>
+                                    <div class="choice-title">감성 에세이</div>
+                                    <div class="choice-desc">시적이고 문학적</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="해시태그 스타일" style="min-height: 120px;">
+                                    <div class="choice-emoji">#</div>
+                                    <div class="choice-title">해시태그</div>
+                                    <div class="choice-desc">SNS 트렌디 스타일</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="에겐톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">👑</div>
+                                    <div class="choice-title">에겐톤</div>
+                                    <div class="choice-desc">고상하고 우아한 비꼬기</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="테토 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">🤪</div>
+                                    <div class="choice-title">테토 톤</div>
+                                    <div class="choice-desc">엉뚱하고 황당한 유머</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="소심한 공격 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">...</div>
+                                    <div class="choice-title">소심한 공격 톤</div>
+                                    <div class="choice-desc">말줄임 기법</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="말줄임 밈 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">밈</div>
+                                    <div class="choice-title">말줄임 밈 톤</div>
+                                    <div class="choice-desc">바이럴 특화</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="냉소 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">😏</div>
+                                    <div class="choice-title">냉소 톤</div>
+                                    <div class="choice-desc">쿨하고 현실적</div>
+                                </div>
+                                <div class="choice-item advanced-tone-item" data-value="틱톡 트렌드 톤" style="min-height: 120px;">
+                                    <div class="choice-emoji">🎵</div>
+                                    <div class="choice-title">틱톡 트렌드</div>
+                                    <div class="choice-desc">바이럴 트렌드 반영</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OCR 기능 -->
+                        <div id="ocrToggle" style="cursor: pointer; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8fafc; transition: all 0.3s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 500; color: #374151;">OCR 이미지 텍스트 인식</span>
+                                <span id="ocrArrow" style="transition: transform 0.3s ease;">▼</span>
+                            </div>
+                        </div>
+
+                        <div id="ocrOptions" style="display: none; margin-top: 1rem;">
+                            <div style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 2rem; text-align: center; background: #fafbfc;">
+                                <input type="file" id="ocrImageInput" accept="image/*" style="display: none;">
+                                <div id="ocrDropZone" style="cursor: pointer;">
+                                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.6;">📷</div>
+                                    <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">이미지 업로드</div>
+                                    <div style="font-size: 0.9rem; color: #6b7280;">이미지에서 텍스트를 추출하여 조롱 내용에 활용</div>
+                                </div>
+                                <div id="ocrPreview" style="display: none; margin-top: 1rem;">
+                                    <img id="ocrImage" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                                    <div id="ocrResult" style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px; text-align: left; font-size: 0.9rem; color: #374151;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-footer">
+                <button class="nav-btn back" onclick="prevStep()">← 이전</button>
+                <button class="nav-btn next" id="toneLengthNext" onclick="nextStep()" disabled>다음 →</button>
+            </div>
+        </div>
+
+        <!-- 3단계: 실시간 조롱 텍스트 작성 -->
+        <div class="step-screen" data-step="3">
+            <div class="header">
+                <div class="logo">Jorong Studio</div>
+                <div class="step-indicator">3단계 / 3단계</div>
+            </div>
+            <div class="content" style="position: relative;">
+                <div class="step-title">조롱 텍스트 생성 중...</div>
+                <div class="step-subtitle">AI가 실시간으로 조롱 텍스트를 작성하는 모습을 지켜보세요</div>
+
+                <div id="realTimeLetterContainer" style="margin-bottom: 2rem; flex: 1;">
+                    <div class="modern-letter" id="realTimeLetter" style="min-height: 350px; position: relative; font-size: 18px;">
+                        <div id="realTimeText" style="line-height: 1.8; font-family: 'Noto Sans KR', sans-serif; color: #1a202c; letter-spacing: 0.02em;"></div>
+
+                        <div id="letterLoadingAnimation" style="display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); z-index: 10; border-radius: 20px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+                                <div class="loading-spinner"></div>
+                                <div style="color: #4a5568; font-size: 1rem; font-weight: 600; text-align: center;">
+                                    <div id="loadingText" style="margin-bottom: 0.8rem;">재치 있는 조롱 텍스트를 작성 중...</div>
+                                    <div style="font-size: 0.85rem; opacity: 0.8; font-weight: 400;">
+                                        <span id="progressText">분석 중</span> • <span id="timeEstimate">예상 시간: 10-15초</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-footer">
+                <button class="nav-btn back" onclick="prevStep()">← 이전</button>
+                <button class="nav-btn next" id="realTimeNext" onclick="nextStep()" disabled>조롱 텍스트 완성! →</button>
+            </div>
+        </div>
+
+        <!-- 4단계: 결과 화면 -->
+        <div class="step-screen result-screen" data-step="4">
+            <div class="header">
+                <div class="logo">Jorong Studio</div>
+                <div class="step-indicator">완성!</div>
+            </div>
+            <div class="content">
+                <div class="result-content">
+                    <div class="result-title">조롱 텍스트가 완성되었습니다!</div>
+
+                    <div id="safetyWarningMessage" class="safety-warning" style="display: none;">
+                        <span class="icon">!</span>
+                        <span id="safetyWarningText"></span>
+                    </div>
+
+
+
+                    <div class="letter-display analog-letter" id="letterResult"></div>
+
+                    <div class="result-actions">
+                        <button class="action-btn" style="background: #8B4513; color: white; border: 2px solid #8B4513; box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);" onclick="analyzeTauntText()">조롱 분석 및 개선 제안</button>
+                        <button class="action-btn secondary" onclick="copyLetter()">복사하기</button>
+                        <button class="action-btn secondary" onclick="shareLetter()">공유하기</button>
+                        <button class="action-btn" style="background: #8B4513; color: white; border: 2px solid #8B4513; box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);" onclick="newLetter()">+ 새 조롱 텍스트 만들기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 조롱 분석 결과 모달 -->
+        <div class="modal-overlay" id="analysisModalOverlay">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="closeAnalysisModal()">&times;</button>
+                <div class="modal-title">조롱 텍스트 분석 결과</div>
+                <div id="analysisContent">
+                    <div class="modal-loading-spinner"></div>
+                    <p style="text-align: center; margin-top: 1rem; color: #666;">분석 중...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let selectedTarget = '';
+        let selectedKeywords = '';
+        let selectedTone = '';
+        let selectedDarknessLevel = 2; // 기본값: 가벼운 놀림
+        let darknessLevels = [];
+        let textLength = 500;
+        let currentResult = '';
+        let isGenerating = false;
+        let currentGeneratedText = '';
+        let currentSafetyAnalysis = null;
+
+        function showStep(step) {
+            document.querySelectorAll('.step-screen').forEach((screen) => {
+                screen.classList.remove('active', 'prev');
+            });
+            const targetScreen = document.querySelector('[data-step="' + step + '"]');
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
+            currentStep = step;
+
+            const stepIndicator = document.querySelector('.step-indicator');
+            if (stepIndicator) {
+                if (step === 0) stepIndicator.textContent = '';
+                else if (step === 1) stepIndicator.textContent = '1단계 / 3단계';
+                else if (step === 2) stepIndicator.textContent = '2단계 / 3단계';
+                else if (step === 3) stepIndicator.textContent = '3단계 / 3단계';
+                else if (step === 4) stepIndicator.textContent = '완성!';
+            }
+
+            if (step === 2) {
+                loadStep2Data();
+            } else if (step === 3) {
+                startRealTimeGeneration();
+            }
+        }
+
+        function nextStep() {
+            if (currentStep === 0) {
+                showStep(1);
+            } else if (currentStep === 1) {
+                const targetInput = document.getElementById('targetInput').value.trim();
+                const keywordsInput = document.getElementById('keywordsInput').value.trim();
+                if (!targetInput || !keywordsInput) {
+                    alert('조롱 대상과 내용을 모두 입력해주세요!');
+                    return;
+                }
+                selectedTarget = targetInput;
+                selectedKeywords = keywordsInput;
+                showStep(2);
+            } else if (currentStep === 2) {
+                if (!selectedTone) {
+                    alert('조롱 텍스트의 톤을 선택해주세요!');
+                    return;
+                }
+                showStep(3);
+            } else if (currentStep === 3) {
+                showStep(4);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep === 1) {
+                showStep(0);
+            } else if (currentStep === 2) {
+                showStep(1);
+            } else if (currentStep === 3) {
+                isGenerating = false;
+                showStep(2);
+            }
+        }
+
+        function startApp() {
+            console.log('시작 버튼 클릭됨');
+            showStep(1);
+        }
+
+        function updateLengthValue(value) {
+            const lengthValueDisplay = document.getElementById('lengthValue');
+            const lengthMap = {
+                100: "아주 짧게 (100자)",
+                200: "짧게 (200자)", 
+                300: "보통 (300자)",
+                400: "보통 (400자)",
+                500: "중간 (500자)",
+                600: "중간 (600자)",
+                700: "길게 (700자)",
+                800: "길게 (800자)",
+                900: "매우 길게 (900자)",
+                1000: "아주 길게 (1000자)"
+            };
+            lengthValueDisplay.textContent = lengthMap[value] || value + '자';
+            textLength = parseInt(value);
+        }
+
+
+
+        async function startRealTimeGeneration() {
+            if (isGenerating) return;
+            isGenerating = true;
+
+            const realTimeTextDiv = document.getElementById('realTimeText');
+            const loadingAnimationDiv = document.getElementById('letterLoadingAnimation');
+            const realTimeNextBtn = document.getElementById('realTimeNext');
+            const safetyWarningMessageDiv = document.getElementById('safetyWarningMessage');
+
+            realTimeTextDiv.innerHTML = '';
+            realTimeTextDiv.style.opacity = '0.3';
+            loadingAnimationDiv.style.display = 'flex';
+            realTimeNextBtn.disabled = true;
+            safetyWarningMessageDiv.style.display = 'none';
+
+            const requestUrl = window.location.origin + '/generate_taunt_text';
+
+            try {
+                const response = await fetch(requestUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target: selectedTarget,
+                        keywords: selectedKeywords,
+                        tone: selectedTone,
+                        darkness_level: selectedDarknessLevel,
+                        length: textLength
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    currentGeneratedText = data.letter;
+                    currentSafetyAnalysis = data.post_generation_safety_analysis;
+
+                    setTimeout(() => {
+                        loadingAnimationDiv.style.display = 'none';
+                        realTimeTextDiv.style.opacity = '1';
+                        showLetterWithTypewriter(currentGeneratedText, currentSafetyAnalysis);
+                        realTimeNextBtn.disabled = false;
+                    }, 500);
+
+                } else {
+                    console.error('조롱 텍스트 생성 실패:', data.message);
+                    showGenerationError(data.message);
+                }
+            } catch (error) {
+                console.error('API 통신 오류:', error);
+                showGenerationError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            } finally {
+                isGenerating = false;
+            }
+        }
+
+        function showGenerationError(message) {
+            const realTimeTextDiv = document.getElementById('realTimeText');
+            const loadingAnimationDiv = document.getElementById('letterLoadingAnimation');
+            const realTimeNextBtn = document.getElementById('realTimeNext');
+
+            loadingAnimationDiv.style.display = 'none';
+            realTimeTextDiv.style.opacity = '1';
+            realTimeTextDiv.innerHTML = '<div style="text-align: center; color: #d9534f; padding: 2rem;"><div style="font-size: 2rem; margin-bottom: 1rem;">😔</div><div style="font-weight: 600; margin-bottom: 0.5rem;">조롱 텍스트 생성에 실패했습니다</div><div style="font-size: 0.9rem; opacity: 0.8;">' + message + '</div></div>';
+            realTimeNextBtn.disabled = false;
+        }
+
+        function showLetterWithTypewriter(text, safetyAnalysis) {
+            const letterDiv = document.getElementById('letterResult');
+            const realTimeTextDiv = document.getElementById('realTimeText');
+            const realTimeLetterDiv = document.getElementById('realTimeLetter');
+            const safetyWarningMessageDiv = document.getElementById('safetyWarningMessage');
+            const safetyWarningTextSpan = document.getElementById('safetyWarningText');
+
+            const currentFontSize = 18;
+            realTimeLetterDiv.style.fontSize = currentFontSize + 'px';
+
+            letterDiv.innerHTML = '<div class="modern-letter page-turn" id="typewriterText" style="min-height: 200px; position: relative; font-size: ' + currentFontSize + 'px;"></div>';
+
+            if (safetyAnalysis && safetyAnalysis.is_safe === false) {
+                safetyWarningTextSpan.textContent = '경고: ' + safetyAnalysis.safety_message;
+                safetyWarningMessageDiv.style.display = 'flex';
+            } else {
+                safetyWarningMessageDiv.style.display = 'none';
+            }
+
+            typeRealTimeText(text, realTimeTextDiv);
+            setTimeout(() => {
+                const typewriterElement = document.getElementById('typewriterText');
+                typewriterElement.innerHTML = text;
+            }, 2000);
+        }
+
+        function typeRealTimeText(text, targetElement) {
+            let i = 0;
+            const filteredText = text.replace(/[^\uAC00-\uD7AF\u0000-\u007F\s]/g, '');
+
+            function typeChar() {
+                if (i < filteredText.length) {
+                    const char = filteredText.charAt(i);
+                    targetElement.innerHTML += char;
+                    i++;
+                    const typingSpeed = 50 + Math.random() * 50;
+                    setTimeout(typeChar, typingSpeed);
+                }
+            }
+            typeChar();
+        }
+
+        async function analyzeTauntText() {
+            const analysisModalOverlay = document.getElementById('analysisModalOverlay');
+            const analysisContentDiv = document.getElementById('analysisContent');
+
+            analysisModalOverlay.classList.add('active');
+            analysisContentDiv.innerHTML = '<div class="modal-loading-spinner"></div><p style="text-align: center; margin-top: 1rem; color: #666;">조롱 텍스트를 분석 중...</p>';
+
+            const textToAnalyze = document.getElementById('letterResult').innerText || document.getElementById('realTimeText').innerText;
+            if (!textToAnalyze.trim()) {
+                analysisContentDiv.innerHTML = '<div style="text-align: center; color: #d9534f;"><p>분석할 조롱 텍스트가 없습니다.</p><button onclick="closeAnalysisModal()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 5px; cursor: pointer;">닫기</button></div>';
+                return;
+            }
+
+            const requestUrl = window.location.origin + '/analyze_taunt';
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
+
+                const response = await fetch(requestUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                    taunt_text: textToAnalyze }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`서버 오류: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const analysis = data.analysis;
+                    analysisContentDiv.innerHTML = `
+                        <div class="modal-section">
+                            <h5>📊 분석 결과</h5>
+                            <p><strong>유머 수준:</strong> ${analysis.humor_level}</p>
+                            <p><strong>재치 점수:</strong> ${analysis.wit_score} / 5점</p>
+                        </div>
+                        <div class="modal-section">
+                            <h5>🛡️ 안전성 평가</h5>
+                            <p><strong>상태:</strong> ${analysis.safety_concern}</p>
+                            <p>${analysis.safety_details}</p>
+                        </div>
+                        <div class="modal-section">
+                            <h5>💡 개선 제안</h5>
+                            <ul>${analysis.improvement_suggestions.map(s => '<li>' + s + '</li>').join('')}</ul>
+                        </div>
+                        <div style="text-align: center; margin-top: 1.5rem;">
+                            <button onclick="closeAnalysisModal()" style="padding: 0.8rem 2rem; background: #d9534f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">확인</button>
+                        </div>
+                    `;
+                } else {
+                    analysisContentDiv.innerHTML = `
+                        <div style="text-align: center; color: #d9534f;">
+                            <p><strong>분석 실패</strong></p>
+                            <p>${data.message || '알 수 없는 오류가 발생했습니다.'}</p>
+                            <button onclick="closeAnalysisModal()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 5px; cursor: pointer;">닫기</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('분석 API 통신 오류:', error);
+                let errorMessage = '네트워크 오류로 분석에 실패했습니다.';
+
+                if (error.name === 'AbortError') {
+                    errorMessage = '요청 시간이 초과되었습니다. 다시 시도해주세요.';
+                } else if (error.message.includes('서버 오류')) {
+                    errorMessage = error.message;
+                }
+
+                analysisContentDiv.innerHTML = `
+                    <div style="text-align: center; color: #d9534f;">
+                        <p><strong>오류 발생</strong></p>
+                        <p>${errorMessage}</p>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="analyzeTauntText()" style="padding: 0.5rem 1rem; background: #d9534f; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">재시도</button>
+                            <button onclick="closeAnalysisModal()" style="padding: 0.5rem 1rem; background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 5px; cursor: pointer;">닫기</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function closeAnalysisModal() {
+            document.getElementById('analysisModalOverlay').classList.remove('active');
+        }
+
+        function copyLetter() {
+            const text = document.getElementById('letterResult').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('텍스트가 클립보드에 복사되었습니다!');
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('텍스트가 클립보드에 복사되었습니다!');
+            } catch (err) {
+                alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function shareLetter() {
+            const text = document.getElementById('letterResult').innerText;
+            if (navigator.share) {
+                navigator.share({ title: '조롱 - 장문 조롱 텍스트', text });
+            } else {
+                copyLetter(); 
+            }
+        }
+
+        function newLetter() {
+            // 문제 해결 4: 새 조롱 텍스트 만들기 시 톤 초기화
+            currentStep = 0;
+            selectedTone = null;
+            document.querySelectorAll('.choice-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            updateSteps();
+            updateNavigationButtons();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('페이지 로드 완료');
+
+            const startBtn = document.getElementById('startButton');
+            if (startBtn) {
+                startBtn.addEventListener('click', startApp);
+                console.log('시작 버튼 이벤트 리스너 추가됨');
+            }
+
+            const targetInput = document.getElementById('targetInput');
+            const keywordsInput = document.getElementById('keywordsInput');
+            const inputNextBtn = document.getElementById('inputNext');
+
+            const checkInputValidity = () => {
+                if (targetInput && keywordsInput && inputNextBtn) {
+                    inputNextBtn.disabled = !(targetInput.value.trim() && keywordsInput.value.trim());
+                }
+            };
+
+            if (targetInput) targetInput.addEventListener('input', checkInputValidity);
+            if (keywordsInput) keywordsInput.addEventListener('input', checkInputValidity);
+
+            const toneGrid = document.getElementById('toneGrid');
+            const toneLengthNextBtn = document.getElementById('toneLengthNext');
+            const letterLengthInput = document.getElementById('letterLength');
+
+            const checkToneAndLengthValidity = () => {
+                if (toneLengthNextBtn) {
+                    const hasSelectedTone = document.querySelector('.advanced-tone-item.selected') !== null;
+                    const hasSelectedDarkness = selectedDarknessLevel > 0;
+                    toneLengthNextBtn.disabled = !(hasSelectedTone && hasSelectedDarkness);
+                }
+            };
+
+            // 흑화 단계 데이터 로딩
+            window.loadDarknessLevels = async function loadDarknessLevels() {
+                // 기본 데이터 정의
+                const defaultDarknessLevels = [
+                    { id: 1, level_name: "순수 유머", level_number: 1, description: "완전히 건전하고 밝은 유머", intensity_score: 2, safety_level: 5 },
+                    { id: 2, level_name: "가벼운 놀림", level_number: 2, description: "친구 사이의 장난스러운 놀림", intensity_score: 4, safety_level: 4 },
+                    { id: 3, level_name: "날카로운 지적", level_number: 3, description: "문제점을 명확히 짚어내는 직설적인 비판", intensity_score: 6, safety_level: 3 },
+                    { id: 4, level_name: "강한 조롱", level_number: 4, description: "상당한 감정적 타격을 주는 수준의 조롱", intensity_score: 8, safety_level: 2 },
+                    { id: 5, level_name: "파괴적 공격", level_number: 5, description: "심각한 정신적 타격을 가하는 수준", intensity_score: 10, safety_level: 1 }
+                ];
+
+                darknessLevels = defaultDarknessLevels;
+
+                // 백그라운드에서 데이터베이스 시도
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                    const response = await fetch('/get_darkness_levels', {
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status === 'success' && data.levels && data.levels.length > 0) {
+                            darknessLevels = data.levels;
+                            console.log('데이터베이스에서 흑화 단계 업데이트 완료');
+                        }
+                    }
+                } catch (error) {
+                    console.log('데이터베이스 연결 실패, 기본 데이터 계속 사용:', error.message);
+                }
+            }
+
+            function updateDarknessValue(value) {
+                const darknessValueDisplay = document.getElementById('darknessValue');
+                const selectedTitle = document.getElementById('selectedDarknessTitle');
+                const selectedDesc = document.getElementById('selectedDarknessDesc');
+                const selectedSafety = document.getElementById('selectedDarknessSafety');
+
+                const levelMap = {
+                    1: { name: "순수 유머", desc: "완전히 건전하고 밝은 유머", safety: 5, color: "#10b981" },
+                    2: { name: "가벼운 놀림", desc: "친구 사이의 장난스러운 놀림", safety: 4, color: "#f59e0b" },
+                    3: { name: "날카로운 지적", desc: "문제점을 명확히 짚어내는 직설적인 비판", safety: 3, color: "#f59e0b" },
+                    4: { name: "강한 조롱", desc: "상당한 감정적 타격을 주는 수준의 조롱", safety: 2, color: "#ef4444" },
+                    5: { name: "파괴적 공격", desc: "극도로 강한 조롱 (사용 주의)", safety: 1, color: "#dc2626" }
+                };
+
+                const level = levelMap[value];
+                const safetyText = level.safety >= 4 ? '안전' : level.safety >= 3 ? '주의 필요' : value == 5 ? '극도 위험' : '위험';
+                const warningText = value == 5 ? ' ⚠️ 사용 시 각별한 주의 필요' : '';
+
+                darknessValueDisplay.textContent = `${level.name} (${value}단계)`;
+                selectedTitle.textContent = `${value}단계: ${level.name}`;
+                selectedDesc.textContent = level.desc + warningText;
+                selectedSafety.innerHTML = `<span style="color: ${level.color};">⚠️ 안전도: ${safetyText} (${level.safety}/5)</span>`;
+
+                selectedDarknessLevel = parseInt(value);
+            }
+
+            // loadStep2Data 함수를 전역으로 정의
+            window.loadStep2Data = function() {
+                loadDarknessLevels();
+            };
+
+            // 고급 톤 선택 토글
+            const advancedToneToggle = document.getElementById('advancedToneToggle');
+            const advancedToneOptions = document.getElementById('advancedToneOptions');
+            const advancedToneArrow = document.getElementById('advancedToneArrow');
+
+            if (advancedToneToggle) {
+                advancedToneToggle.addEventListener('click', () => {
+                    const isVisible = advancedToneOptions.style.display !== 'none';
+                    advancedToneOptions.style.display = isVisible ? 'none' : 'block';
+                    advancedToneArrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+                });
+            }
+
+            // 고급 톤 선택 이벤트
+            if (advancedToneOptions) {
+                advancedToneOptions.addEventListener('click', (e) => {
+                    const item = e.target.closest('.advanced-tone-item');
+                    if (item && item.dataset.value) {
+                        document.querySelectorAll('.advanced-tone-item').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        selectedTone = item.dataset.value;
+                        checkToneAndLengthValidity();
+                    }
+                });
+            }
+
+            // OCR 기능 토글
+            const ocrToggle = document.getElementById('ocrToggle');
+            const ocrOptions = document.getElementById('ocrOptions');
+            const ocrArrow = document.getElementById('ocrArrow');
+
+            if (ocrToggle) {
+                ocrToggle.addEventListener('click', () => {
+                    const isVisible = ocrOptions.style.display !== 'none';
+                    ocrOptions.style.display = isVisible ? 'none' : 'block';
+                    ocrArrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+                });
+            }
+
+            // OCR 이미지 업로드
+            const ocrDropZone = document.getElementById('ocrDropZone');
+            const ocrImageInput = document.getElementById('ocrImageInput');
+            const ocrPreview = document.getElementById('ocrPreview');
+            const ocrImage = document.getElementById('ocrImage');
+            const ocrResult = document.getElementById('ocrResult');
+
+            if (ocrDropZone) {
+                ocrDropZone.addEventListener('click', () => {
+                    ocrImageInput.click();
+                });
+
+                ocrDropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    ocrDropZone.style.borderColor = '#d9534f';
+                    ocrDropZone.style.backgroundColor = '#fff5f5';
+                });
+
+                ocrDropZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    ocrDropZone.style.borderColor = '#d1d5db';
+                    ocrDropZone.style.backgroundColor = '#fafbfc';
+                });
+
+                ocrDropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    ocrDropZone.style.borderColor = '#d1d5db';
+                    ocrDropZone.style.backgroundColor = '#fafbfc';
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleOCRImage(files[0]);
+                    }
+                });
+            }
+
+            if (ocrImageInput) {
+                ocrImageInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        handleOCRImage(file);
+                    }
+                });
+            }
+
+            function handleOCRImage(file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('이미지 파일만 업로드 가능합니다.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    ocrImage.src = e.target.result;
+                    ocrPreview.style.display = 'block';
+                    ocrResult.innerHTML = '<div style="text-align: center; color: #6b7280;">텍스트 인식 중...</div>';
+
+                    // 시뮬레이션된 OCR 결과 (실제 구현 시 OCR API 호출)
+                    setTimeout(() => {
+                        ocrResult.innerHTML = '<strong>인식된 텍스트:</strong><br>이미지에서 인식된 텍스트가 여기에 표시됩니다. 실제 OCR 기능은 향후 구현 예정입니다.';
+                    }, 2000);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            if (letterLengthInput) {
+                letterLengthInput.addEventListener('input', (e) => {
+                    textLength = parseInt(e.target.value);
+                    updateLengthValue(textLength);
+                    checkToneAndLengthValidity();
+                });
+            }
+
+            const darknessLevelInput = document.getElementById('darknessLevel');
+            if (darknessLevelInput) {
+                darknessLevelInput.addEventListener('input', (e) => {
+                    updateDarknessValue(e.target.value);
+                    checkToneAndLengthValidity();
+                });
+            }
+
+
+
+            checkInputValidity();
+            checkToneAndLengthValidity();
+        });
+    </script>
+</body>
+</html>

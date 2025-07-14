@@ -1,0 +1,122 @@
+{
+  "report_generated": "2025-07-03T15:19:57.889916",
+  "summary": {
+    "total_users": 1,
+    "total_requests": 3,
+    "most_popular_tone": "MZ 반말 톤",
+    "advanced_technique_usage": 0
+  },
+  "usage_patterns": {
+    "daily_stats": [
+      [
+        3,
+        3,
+        "955.3333333333333333",
+        "2025-07-03"
+      ]
+    ],
+    "tone_stats": [
+      [
+        "MZ 반말 톤",
+        2,
+        86.0,
+        "670.0000000000000000"
+      ],
+      [
+        "냉소 톤",
+        1,
+        96.0,
+        "1526.0000000000000000"
+      ]
+    ],
+    "target_stats": [
+      [
+        "황연걸",
+        1,
+        "MZ 반말 톤",
+        "153.0000000000000000"
+      ],
+      [
+        "야근하는 시연아",
+        1,
+        "냉소 톤",
+        "1526.0000000000000000"
+      ],
+      [
+        "농구 못해서 긁힌 박진형",
+        1,
+        "MZ 반말 톤",
+        "1187.0000000000000000"
+      ]
+    ]
+  },
+  "technique_analysis": {
+    "technique_stats": [],
+    "recent_techniques": []
+  },
+  "safety_analysis": {
+    "safety_stats": [
+      [
+        false,
+        2,
+        "MZ 반말 톤",
+        "670.0000000000000000"
+      ],
+      [
+        true,
+        1,
+        "냉소 톤",
+        "1526.0000000000000000"
+      ]
+    ],
+    "risk_patterns": [
+      [
+        "The text contains mocking and potentially hurtful language, targeting the recipient's perceived lack of skill in basketball. While it ends with an apology and invitation to play FIFA, the overall tone is likely to cause emotional distress and thus violates the guideline against causing harm and being offensive. The use of hashtags like '#농구고자' (basketball inept) and '#긁혔냐' (are you triggered) further contributes to the negative impact.",
+        1,
+        "MZ 반말 톤"
+      ],
+      [
+        "This text contains elements of mockery and belittling, specifically targeting the recipient's financial status and boasting behavior. The phrases '자랑질,' '개웃김,' '정신승리,' and implications about their inability to donate ('그걸론 안 돼겠네') contribute to a potentially offensive tone. While the intent may be humorous, the content could be perceived as insulting and may violate guidelines against disparagement.",
+        1,
+        "MZ 반말 톤"
+      ]
+    ]
+  },
+  "preference_analysis": {
+    "user_preferences": [],
+    "keyword_trends": [
+      [
+        "농구 실력",
+        1,
+        "2025-07-03"
+      ],
+      [
+        "왜 일안하고 놀고 자빠졌냐",
+        1,
+        "2025-07-03"
+      ],
+      [
+        "자기 자랑",
+        1,
+        "2025-07-03"
+      ],
+      [
+        " 긁힘",
+        1,
+        "2025-07-03"
+      ]
+    ]
+  },
+  "insights": [
+    {
+      "category": "톤 사용 패턴",
+      "insight": "가장 인기있는 톤은 'MZ 반말 톤'로 2회 사용되었습니다.",
+      "recommendation": "이 톤의 성공 요소를 다른 톤에도 적용해보세요."
+    },
+    {
+      "category": "안전성",
+      "insight": "전체 요청의 33.3%가 안전한 것으로 판정되었습니다.",
+      "recommendation": "안전성 필터를 강화할 필요가 있습니다."
+    }
+  ]
+}

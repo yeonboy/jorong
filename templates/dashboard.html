@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조롱 프로젝트 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-card.strategy {
+            border-left-color: #4CAF50;
+        }
+        
+        .category-card.research {
+            border-left-color: #2196F3;
+        }
+        
+        .category-card.development {
+            border-left-color: #FF9800;
+        }
+        
+        .category-card.analytics {
+            border-left-color: #9C27B0;
+        }
+        
+        .category-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .category-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .category-items {
+            list-style: none;
+        }
+        
+        .category-items li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .category-items li:last-child {
+            border-bottom: none;
+        }
+        
+        .category-items li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+            margin-top: 15px;
+        }
+        
+        .status-active {
+            background-color: #4CAF50;
+        }
+        
+        .status-in_progress {
+            background-color: #FF9800;
+        }
+        
+        .status-planning {
+            background-color: #2196F3;
+        }
+        
+        .status-ongoing {
+            background-color: #9C27B0;
+        }
+        
+        .metrics-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .recent-activities {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-date {
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>🎭 조롱 프로젝트 대시보드</h1>
+            <p>노션 연동 종합 관리 시스템</p>
+        </div>
+        
+        <div class="metrics-section">
+            <h2>프로젝트 현황</h2>
+            <div class="metrics-grid" id="metricsGrid">
+                <div class="loading">데이터 로딩 중...</div>
+            </div>
+        </div>
+        
+        <div class="categories-grid" id="categoriesGrid">
+            <div class="loading">카테고리 정보 로딩 중...</div>
+        </div>
+        
+        <div class="recent-activities">
+            <h2>최근 활동</h2>
+            <div id="recentActivities">
+                <div class="loading">활동 내역 로딩 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API 데이터 로드
+        async function loadDashboardData() {
+            try {
+                // 카테고리 데이터 로드
+                const categoriesResponse = await fetch('/api/project/categories');
+                const categoriesData = await categoriesResponse.json();
+                
+                if (categoriesData.status === 'success') {
+                    renderCategories(categoriesData.categories);
+                }
+                
+                // 대시보드 데이터 로드
+                const dashboardResponse = await fetch('/api/notion/dashboard');
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardData.status === 'success') {
+                    renderMetrics(dashboardData.dashboard.performance_metrics);
+                    renderActivities(dashboardData.dashboard.recent_activities);
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            }
+        }
+        
+        function renderCategories(categories) {
+            const grid = document.getElementById('categoriesGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(categories).forEach(([key, category]) => {
+                const card = document.createElement('div');
+                card.className = `category-card ${key}`;
+                
+                card.innerHTML = `
+                    <div class="category-title">${category.name}</div>
+                    <div class="category-description">${category.description}</div>
+                    <ul class="category-items">
+                        ${category.items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                    <span class="status-badge status-${category.status}">${getStatusText(category.status)}</span>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderMetrics(metrics) {
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(metrics).forEach(([key, value]) => {
+                const metric = document.createElement('div');
+                metric.className = 'metric-item';
+                
+                metric.innerHTML = `
+                    <div class="metric-value">${value}</div>
+                    <div class="metric-label">${getMetricLabel(key)}</div>
+                `;
+                
+                grid.appendChild(metric);
+            });
+        }
+        
+        function renderActivities(activities) {
+            const container = document.getElementById('recentActivities');
+            container.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                
+                item.innerHTML = `
+                    <div>
+                        <strong>${activity.activity}</strong>
+                        <div style="color: #666; font-size: 0.9em;">${activity.category}</div>
+                    </div>
+                    <div class="activity-date">${activity.date}</div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        function getStatusText(status) {
+            const statusMap = {
+                'active': '진행중',
+                'in_progress': '개발중',
+                'planning': '계획중',
+                'ongoing': '진행중'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function getMetricLabel(key) {
+            const labelMap = {
+                'api_response_time': 'API 응답 시간',
+                'system_uptime': '시스템 가동률',
+                'user_satisfaction': '사용자 만족도',
+                'feature_adoption': '기능 채택률'
+            };
+            return labelMap[key] || key;
+        }
+        
+        // 페이지 로드 시 데이터 로드
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+        
+        // 5분마다 데이터 갱신
+        setInterval(loadDashboardData, 300000);
+    </script>
+</body>
+</html>
